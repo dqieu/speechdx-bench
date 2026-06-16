@@ -4,8 +4,8 @@
 
 Interactive leaderboard for the **SpeechDx** speech-health benchmark — external
 audio/speech encoders ranked by **mean reciprocal rank (MRR)** across 27 clinical
-tasks. Each cell is a frozen-encoder linear probe: **ROC-AUC** for classification,
-**C-index** for regression (higher is better, 0.5 = chance). Task columns are
+tasks. Each cell is a frozen-encoder linear probe: **ROC-AUC** for classification
+(higher = better, 0.5 = chance), **MAE** for regression (lower = better). Task columns are
 border-coloured by the paper's speech-production categories (Affective / Cognitive
 / Motor / Respiratory); hover a task for its description, hover a model for its
 checkpoint, click any column header to sort.
