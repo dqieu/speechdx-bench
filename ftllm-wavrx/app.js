@@ -24,15 +24,34 @@
 
   gateForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (!window.LB_ENC) { showMsg("data failed to load.", "err"); return; }
+    if (!window.LB_ENC) { showMsg("Data failed to load — hard-refresh the page.", "err"); return; }
+    if (!(window.crypto && crypto.subtle)) {
+      showMsg("This browser blocks in-page decryption (needs https / Safari, not an in-app browser).", "err");
+      return;
+    }
+    const go = document.getElementById("gate-go");
+    go.disabled = true;
     showMsg("Decrypting…", "ok");
+    // let the message paint before the (CPU-heavy on mobile) key derivation
+    await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
+    const slow = setTimeout(() => showMsg("Still working… key-stretching is slow on some phones, hang on.", "ok"), 2500);
+
+    let data;
     try {
-      window.LB_DATA = await decrypt(gatePass.value, window.LB_ENC);
-      gate.hidden = true; appEl.hidden = false;
-      boot(window.LB_DATA);
+      data = await decrypt(gatePass.value, window.LB_ENC);
     } catch (err) {
-      showMsg("Wrong passphrase.", "err");
-      gatePass.select();
+      clearTimeout(slow); go.disabled = false;
+      showMsg("Wrong passphrase.", "err"); gatePass.select();
+      return;
+    }
+    clearTimeout(slow);
+    try {                                  // render errors must not masquerade as a decrypt hang
+      window.LB_DATA = data;
+      gate.hidden = true; appEl.hidden = false;
+      boot(data);
+    } catch (err) {
+      gate.hidden = false; go.disabled = false;
+      showMsg("Decrypted, but failed to render: " + err.message, "err");
     }
   });
   function showMsg(t, cls) { gateMsg.textContent = t; gateMsg.className = "gate-msg " + cls; gateMsg.hidden = false; }
