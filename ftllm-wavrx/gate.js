@@ -25,7 +25,7 @@
   // build stamp — proves which gate.js + data.js loaded and that WebCrypto exists
   try {
     var bs = document.getElementById("gate-build");
-    if (bs) bs.textContent = "public-backend r11 · " +
+    if (bs) bs.textContent = "public-backend r12 · " +
       (window.LB_ENC ? ("data " + window.LB_ENC.iter + " iters") : "data missing") +
       (window.crypto && crypto.subtle ? " · webcrypto ✓" : " · webcrypto ✗");
   } catch (e) {}
@@ -47,7 +47,7 @@
     gate.hidden = true; app.hidden = false;
     // load the public renderer now that the data + DOM are ready
     var s = document.createElement("script");
-    s.src = "app.js?v=11";
+    s.src = "app.js?v=12";
     s.onerror = function () { gate.hidden = false; app.hidden = true; go.disabled = false; show("Failed to load the renderer.", "err"); };
     document.body.appendChild(s);
   });
