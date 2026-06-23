@@ -8,7 +8,7 @@
   // build stamp — proves which app.js + data.js actually loaded (cache check)
   try {
     var _bs = document.getElementById("gate-build");
-    if (_bs) _bs.textContent = "app r7 · " +
+    if (_bs) _bs.textContent = "app r8 · " +
       (window.LB_ENC ? ("data " + window.LB_ENC.iter + " iters") : "data missing") +
       (window.crypto && crypto.subtle ? " · webcrypto ✓" : " · webcrypto ✗");
   } catch (e) {}
