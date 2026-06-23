@@ -114,25 +114,21 @@ h1 { margin: 0 0 6px; font-size: 27px; letter-spacing: -0.02em; }
 
 /* ---- table ---- */
 main { margin-top: 18px; padding-bottom: 48px; }
+/* plain horizontally-scrollable table — no position:sticky / width:max-content
+   (both are iOS-Safari layout-cliff triggers on a wide grid) */
 .table-wrap {
-  overflow: auto; max-height: 80vh;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
   background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
   box-shadow: 0 1px 2px rgba(20, 30, 50, 0.04);
 }
-table { border-collapse: separate; border-spacing: 0; font-size: 13px; width: max-content; }
+table { border-collapse: separate; border-spacing: 0; font-size: 13px; width: auto; }
 th, td { padding: 0; white-space: nowrap; }
 
-thead th {
-  position: sticky; top: 0; z-index: 3;
-  background: var(--panel); border-bottom: 2px solid var(--line); vertical-align: bottom;
-}
+thead th { background: var(--panel); border-bottom: 2px solid var(--line); vertical-align: bottom; }
 thead th .th-inner { padding: 9px 10px; }
 
-.col-model { position: sticky; left: 0; z-index: 2; background: var(--panel); text-align: left; min-width: 188px; }
-.col-head  { text-align: center; min-width: 96px; }
-thead .col-model { z-index: 4; }
-.col-model { border-right: 1px solid var(--line); }
-.col-head  { border-right: 2px solid var(--line); }
+.col-model { background: var(--panel); text-align: left; min-width: 168px; border-right: 1px solid var(--line); }
+.col-head  { text-align: center; min-width: 92px; border-right: 2px solid var(--line); }
 
 .th-task { cursor: pointer; border-top: 4px solid var(--cat, #ccc); }
 .th-task .th-inner { text-align: center; width: 100px; padding: 8px 7px; white-space: normal; }
