@@ -6,13 +6,18 @@
 
   // ---------- crypto gate ----------
   const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
-  async function decrypt(pass, enc) {
+  async function decrypt(pass, enc, onStep) {
+    const step = s => onStep && onStep(s);
+    step("import");
     const km = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass),
       "PBKDF2", false, ["deriveKey"]);
+    step("derive");
     const key = await crypto.subtle.deriveKey(
       { name: "PBKDF2", salt: b64(enc.salt), iterations: enc.iter, hash: "SHA-256" },
       km, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+    step("decrypt");
     const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(enc.iv) }, key, b64(enc.ct));
+    step("parse");
     return JSON.parse(new TextDecoder().decode(pt));
   }
 
@@ -31,20 +36,30 @@
     }
     const go = document.getElementById("gate-go");
     go.disabled = true;
+    let step = "start";
     showMsg("Decrypting…", "ok");
-    // let the message paint before the (CPU-heavy on mobile) key derivation
-    await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
-    const slow = setTimeout(() => showMsg("Still working… key-stretching is slow on some phones, hang on.", "ok"), 2500);
+    // hard watchdog FIRST (no requestAnimationFrame — it's throttled/paused in iOS Low Power Mode)
+    const watchdog = setTimeout(() => {
+      if (!gate.hidden) {
+        showMsg("Stuck at “" + step + "”. This browser is likely blocking WebCrypto — "
+          + "open the link directly in Safari/Chrome (not an in-app browser), and turn off Low Power Mode. "
+          + "Tell the author this message.", "err");
+        go.disabled = false;
+      }
+    }, 12000);
+    // one plain macrotask so the message paints
+    await new Promise(r => setTimeout(r, 0));
 
     let data;
     try {
-      data = await decrypt(gatePass.value, window.LB_ENC);
+      data = await decrypt(gatePass.value, window.LB_ENC, s => { step = s; showMsg("Decrypting… (" + s + ")", "ok"); });
     } catch (err) {
-      clearTimeout(slow); go.disabled = false;
-      showMsg("Wrong passphrase.", "err"); gatePass.select();
+      clearTimeout(watchdog); go.disabled = false;
+      showMsg("Couldn’t unlock — wrong passphrase, or WebCrypto error (" + ((err && (err.name || err.message)) || "?") + ").", "err");
+      gatePass.select();
       return;
     }
-    clearTimeout(slow);
+    clearTimeout(watchdog);
     try {                                  // render errors must not masquerade as a decrypt hang
       window.LB_DATA = data;
       gate.hidden = true; appEl.hidden = false;
