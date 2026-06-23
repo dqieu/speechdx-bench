@@ -178,3 +178,22 @@ tbody td { border-bottom: 1px solid var(--line); }
 .gate-msg.err { color: #e0556e; }
 .gate-msg.ok { color: var(--ink-soft); }
 .gate-build { margin-top: 14px; font-size: 11px; color: var(--ink-soft); opacity: .85; }
+
+/* ---- board + view segmented controls ---- */
+.controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 12px 0 0; }
+.seg-group { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; background: var(--ctrl-bg); }
+.seg { border: 0; background: transparent; color: var(--ink-soft); font: inherit; font-size: 12.5px; font-weight: 600; padding: 7px 13px; cursor: pointer; white-space: nowrap; }
+.seg + .seg { border-left: 1px solid var(--line); }
+.seg.active { background: var(--accent); color: #fff; }
+.seg:hover:not(.active) { background: var(--th-hover); }
+
+/* ---- pending band + headline ---- */
+.band-row td { background: rgba(200,120,20,0.12); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); padding: 5px 12px; }
+.cell-mrr .mrr-val.pending { font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-soft); }
+.cell-mrr .cov { font-size: 10px; color: var(--ink-soft); }
+
+/* ---- "ours" + WavRx row accents ---- */
+tr.is-ours .col-model { box-shadow: inset 3px 0 0 var(--accent); }
+tr.is-star .col-model { box-shadow: inset 3px 0 0 #c87814; }
+tr.is-star .name { color: #c87814; }
+[data-theme="dark"] tr.is-star .name { color: #e0af68; }

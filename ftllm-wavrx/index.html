@@ -15,7 +15,7 @@
       } catch (e) { document.documentElement.dataset.theme = "light"; }
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=10" />
+  <link rel="stylesheet" href="style.css?v=11" />
 </head>
 <body>
   <!-- password gate -->
@@ -44,10 +44,17 @@
         regression. The single-number <strong>C-index · average</strong> board is pending (Trillium).
       </p>
       <p class="meta" id="meta"></p>
-      <label class="merge-toggle">
-        <input type="checkbox" id="merge-toggle" checked />
-        <span>Average similar tasks</span>
-      </label>
+      <div class="controls">
+        <div class="seg-group" id="board-switch" role="tablist" aria-label="Board">
+          <button class="seg active" type="button" data-board="mae">MAE&nbsp;·&nbsp;MRR</button>
+          <button class="seg" type="button" data-board="cindex">C-index&nbsp;·&nbsp;avg</button>
+        </div>
+        <div class="seg-group" id="view-switch" role="tablist" aria-label="View">
+          <button class="seg" type="button" data-view="raw">Raw&nbsp;27</button>
+          <button class="seg active" type="button" data-view="merged">Merged&nbsp;19</button>
+          <button class="seg" type="button" data-view="category">By&nbsp;category</button>
+        </div>
+      </div>
     </header>
 
     <section class="legend" id="legend" aria-label="Legend"></section>
@@ -65,7 +72,7 @@
     <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
   </div>
 
-  <script src="data.js?v=10"></script>
-  <script src="gate.js?v=10"></script>
+  <script src="data.js?v=11"></script>
+  <script src="gate.js?v=11"></script>
 </body>
 </html>
