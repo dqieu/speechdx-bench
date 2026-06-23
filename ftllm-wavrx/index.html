@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>FT-LLM + WavRx Leaderboard</title>
   <meta name="robots" content="noindex,nofollow" />
-  <meta name="description" content="Private interactive leaderboard — fine-tuned audio-LLMs (30B / 7B) + WavRx vs. frozen-encoder probes on the SpeechDx clinical-speech benchmark." />
+  <meta name="description" content="Private leaderboard — fine-tuned audio-LLMs (30B / 7B) + WavRx vs. frozen-encoder probes on the SpeechDx clinical-speech benchmark." />
   <script>
-    /* set theme before paint to avoid a flash */
     (function () {
       try {
         var t = localStorage.getItem("ftlb-theme");
@@ -16,46 +15,39 @@
       } catch (e) { document.documentElement.dataset.theme = "light"; }
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=8" />
+  <link rel="stylesheet" href="style.css?v=9" />
 </head>
 <body>
-  <!-- ---- password gate (covers the page until the data decrypts) ---- -->
+  <!-- password gate -->
   <div id="gate" class="gate">
     <form id="gate-form" class="gate-card" autocomplete="off">
       <h1>FT-LLM&nbsp;+&nbsp;WavRx Leaderboard</h1>
-      <p class="gate-sub">This board is access-restricted. Enter the passphrase to decrypt it.</p>
+      <p class="gate-sub">Access-restricted. Enter the passphrase to decrypt the board.</p>
       <input id="gate-pass" type="password" placeholder="Passphrase" autocomplete="off"
              autocapitalize="off" autocorrect="off" spellcheck="false" />
       <button id="gate-go" type="submit">Unlock</button>
       <p id="gate-msg" class="gate-msg" hidden></p>
-      <p id="gate-build" style="margin-top:14px;font-size:11px;color:var(--ink-soft);opacity:.85">loading…</p>
+      <p id="gate-build" class="gate-build">loading…</p>
     </form>
   </div>
 
+  <!-- public-backend leaderboard (revealed after unlock) -->
   <div id="app" hidden>
     <header class="page-head">
       <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark / light mode" title="Toggle dark / light"></button>
       <h1>FT-LLM&nbsp;+&nbsp;WavRx Leaderboard</h1>
       <p class="tagline">
         Fine-tuned audio-LLMs (<strong>Qwen3-Omni 30B</strong> LoRA-SFT, the <strong>7B</strong> SFT) and
-        <strong>WavRx</strong> placed against every frozen-encoder probe on the
-        <strong>SpeechDx</strong> clinical-speech benchmark — 13 classification + 6 regression
-        merged tasks, jun12 normalization. <strong>Classification</strong> = ROC-AUC
-        (higher better); regression depends on the board below.
+        <strong>WavRx</strong> against every frozen-encoder probe on the <strong>SpeechDx</strong>
+        clinical-speech benchmark, ranked by <strong>mean reciprocal rank</strong> (MRR). Each cell:
+        <strong>AUC</strong> for classification (higher = better), <strong>MAE&nbsp;↓</strong> for
+        regression. The single-number <strong>C-index · average</strong> board is pending (Trillium).
       </p>
-
-      <div class="controls">
-        <div class="board-switch" role="tablist" aria-label="Leaderboard version">
-          <button id="tab-B" class="seg active" role="tab" data-board="B">MAE&nbsp;·&nbsp;MRR</button>
-          <button id="tab-A" class="seg" role="tab" data-board="A">C-index&nbsp;·&nbsp;avg</button>
-        </div>
-        <label class="merge-toggle">
-          <input type="checkbox" id="merge-toggle" checked />
-          <span>Average similar tasks</span>
-        </label>
-      </div>
-      <p class="board-note" id="board-note"></p>
       <p class="meta" id="meta"></p>
+      <label class="merge-toggle">
+        <input type="checkbox" id="merge-toggle" />
+        <span>Average similar tasks</span>
+      </label>
     </header>
 
     <section class="legend" id="legend" aria-label="Legend"></section>
@@ -66,14 +58,14 @@
       </div>
       <p class="hint">
         Hover/tap a <em>task</em> header for its description · a <em>model</em> for what it is ·
-        click a column header to sort. <span id="hint-extra"></span>
+        click a column header to sort.
       </p>
     </main>
 
     <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
   </div>
 
-  <script src="data.js?v=8"></script>
-  <script src="app.js?v=8"></script>
+  <script src="data.js?v=9"></script>
+  <script src="gate.js?v=9"></script>
 </body>
 </html>
