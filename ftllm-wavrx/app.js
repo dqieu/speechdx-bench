@@ -21,7 +21,7 @@
     (v == null ? "—" : type === "regression" ? v.toFixed(2) : v.toFixed(3).replace(/^0\./, "."));
 
   // ---- state ----
-  let merged = false;                  // "average similar tasks" — default OFF
+  let merged = true;                   // "average similar tasks" — default ON (shows all 24 incl. the 7B rows)
   let sortKey = "mrr", sortDir = -1;    // -1 desc, +1 asc
   const V = () => (merged ? DATA.views.merged : DATA.views.raw);
 
