@@ -60,13 +60,19 @@
       return;
     }
     clearTimeout(watchdog);
-    try {                                  // render errors must not masquerade as a decrypt hang
-      window.LB_DATA = data;
-      gate.hidden = true; appEl.hidden = false;
-      boot(data);
+    window.LB_DATA = data;
+    showMsg("Rendering…", "ok");
+    const w2 = setTimeout(() => {
+      if (appEl.hidden) { showMsg("Stuck while building the table — tell the author this message.", "err"); go.disabled = false; }
+    }, 8000);
+    await new Promise(r => setTimeout(r, 0));     // paint "Rendering…" and start a fresh tick
+    try {
+      boot(data);                                 // build into #app while it is still hidden (no reflow per insert)
+      gate.hidden = true; appEl.hidden = false;   // reveal only once the table is fully built
+      clearTimeout(w2);
     } catch (err) {
-      gate.hidden = false; go.disabled = false;
-      showMsg("Decrypted, but failed to render: " + err.message, "err");
+      clearTimeout(w2); go.disabled = false;
+      showMsg("Decrypted, but rendering failed: " + ((err && err.message) || err), "err");
     }
   });
   function showMsg(t, cls) { gateMsg.textContent = t; gateMsg.className = "gate-msg " + cls; gateMsg.hidden = false; }
