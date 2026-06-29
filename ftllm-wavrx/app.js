@@ -71,7 +71,8 @@
     document.getElementById("meta").innerHTML =
       `${V().models.length} models · ${V().n_tasks} ${viewKey === "category" ? "category columns" : "tasks"} · ` +
       `generated ${DATA.generated} · <a href="${DATA.repo_url}" target="_blank" rel="noopener">repo ↗</a> · ` +
-      `by <a href="${DATA.author_url}" target="_blank" rel="noopener">${DATA.author}</a>`;
+      `by <a href="${DATA.author_url}" target="_blank" rel="noopener">${DATA.author}</a>` +
+      ` · <span style="color:#e0af68">*</span> respiratory (c9s/coswara) scores leak-contaminated`;
   }
 
   function buildHeader() {
@@ -119,10 +120,12 @@
 
     const tdM = document.createElement("td");
     tdM.className = "col-model cell-model";
-    tdM.innerHTML = `<span class="rank">${rank}</span><span class="name">${m.short}</span>`;
-    const mHtml = `<div class="tt-title">${m.display}</div><div class="tt-sub">${m.host}</div>` +
+    tdM.innerHTML = `<span class="rank">${rank}</span><span class="name">${m.short}` +
+      `${m.leak ? '<sup style="color:#e0af68;cursor:help" title="respiratory (c9s/coswara) scores leak-contaminated — see report">*</sup>' : ''}</span>`;
+    const mHtml = `<div class="tt-title">${m.display}${m.leak ? ' *' : ''}</div><div class="tt-sub">${m.host}</div>` +
       `<a class="tt-link" href="${m.repo_url}" target="_blank" rel="noopener">${m.repo} ↗</a>` +
-      `<div class="tt-rev">${m.revision} · ${m.revision_date}</div>`;
+      `<div class="tt-rev">${m.revision} · ${m.revision_date}</div>` +
+      (m.leak ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* c9s/coswara respiratory scores leak-contaminated (cross-task train/test participant overlap, ~25%; see the v3.6 report)</div>` : "");
     tdM.addEventListener("mouseenter", () => showTip(mHtml));
     tdM.addEventListener("click", e => { showTip(mHtml); e.stopPropagation(); });
     tr.appendChild(tdM);
