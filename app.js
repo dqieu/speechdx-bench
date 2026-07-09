@@ -16,34 +16,29 @@
     catRgb[c.code] = [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)).join(" ");
   });
 
-  // AUC / C-index strip the leading 0 (".989", higher better); MAE keeps 2 decimals (lower better)
-  const lowerBetter = t => t.metric === "MAE";
-  const fmt = (v, metric) =>
-    (v == null ? "—" : metric === "MAE" ? v.toFixed(2) : v.toFixed(3).replace(/^0\./, "."));
+  // AUC strips the leading 0 (".989"); MAE keeps 2 decimals
+  const fmt = (v, type) =>
+    (v == null ? "—" : type === "regression" ? v.toFixed(2) : v.toFixed(3).replace(/^0\./, "."));
 
   // ---- state ----
   let merged = false;                  // "average similar tasks" — default OFF
-  let cindex = false;                  // regression metric: MAE (default) or C-index
   let sortKey = "mrr", sortDir = -1;    // -1 desc, +1 asc
-  const V = () => DATA.views[(merged ? "merged" : "raw") + (cindex ? "_cindex" : "")];
+  const V = () => (merged ? DATA.views.merged : DATA.views.raw);
 
   let curTasks = [], bestByTask = {}, maxMrr = 0;
 
-  // ---- legend (rebuilt on render — the regression metric can toggle) ----
+  // ---- legend (built once) ----
   const legend = document.getElementById("legend");
-  function renderLegend() {
-    const metricItems = cindex
-      ? `<span class="legend-item">AUC / C-index — higher better</span>`
-      : `<span class="legend-item">AUC — higher better</span>` +
-        `<span class="legend-item">MAE ↓ — lower better</span>`;
-    legend.innerHTML =
-      `<div class="legend-group"><span class="legend-title">Category</span>` +
-        DATA.categories.map(c =>
-          `<span class="legend-item"><span class="swatch-cat" style="background:rgb(${catRgb[c.code]} / .85)"></span>${c.label}</span>`
-        ).join("") +
-      `</div>` +
-      `<div class="legend-group"><span class="legend-title">Metric</span>${metricItems}</div>`;
-  }
+  legend.innerHTML =
+    `<div class="legend-group"><span class="legend-title">Category</span>` +
+      DATA.categories.map(c =>
+        `<span class="legend-item"><span class="swatch-cat" style="background:rgb(${catRgb[c.code]} / .85)"></span>${c.label}</span>`
+      ).join("") +
+    `</div>` +
+    `<div class="legend-group"><span class="legend-title">Metric</span>` +
+      `<span class="legend-item">AUC — higher better</span>` +
+      `<span class="legend-item">MAE ↓ — lower better</span>` +
+    `</div>`;
 
   // ---- info box (locked bottom-centre; tap/hover to show, × or tap-away to dismiss) ----
   const tip = document.getElementById("tooltip");
@@ -111,7 +106,7 @@
       const th = document.createElement("th");
       th.className = "th-task th-sortable"; th.dataset.key = t.id;
       th.style.setProperty("--cat", catColor[t.category]);
-      const tag = t.type !== "regression" ? "AUC" : (t.metric === "MAE" ? "MAE&nbsp;↓" : "C-index");
+      const tag = t.type === "regression" ? "MAE&nbsp;↓" : "AUC";
       th.innerHTML =
         `<div class="th-inner"><span class="task-tnum">${t.tnum}</span>` +
         `<span class="task-label">${t.slabel}</span>` +
@@ -173,7 +168,7 @@
         td.className = "cell-score" + (v == null ? " na" : "");
         td.style.setProperty("--cat-rgb", catRgb[t.category]);
         if (v != null && v === bestByTask[t.id]) td.classList.add("top1");
-        td.textContent = fmt(v, t.metric);
+        td.textContent = fmt(v, t.type);
         tr.appendChild(td);
       });
 
@@ -187,10 +182,9 @@
     curTasks.forEach(t => {
       const vals = V().models.map(m => m.scores[t.id]).filter(v => v != null);
       bestByTask[t.id] = !vals.length ? null
-        : (lowerBetter(t) ? Math.min.apply(null, vals) : Math.max.apply(null, vals));
+        : (t.type === "regression" ? Math.min.apply(null, vals) : Math.max.apply(null, vals));
     });
     maxMrr = Math.max.apply(null, V().models.map(m => m.mrr || 0));
-    renderLegend();
     renderMeta();
     table.innerHTML = ""; tbody = null;
     buildHeader();
@@ -201,9 +195,6 @@
   // ---- controls: average-similar-tasks checkbox + theme toggle ----
   const mergeCb = document.getElementById("merge-toggle");
   if (mergeCb) mergeCb.addEventListener("change", () => { merged = mergeCb.checked; render(); });
-
-  const cindexCb = document.getElementById("cindex-toggle");
-  if (cindexCb) cindexCb.addEventListener("change", () => { cindex = cindexCb.checked; render(); });
 
   const themeBtn = document.getElementById("theme-toggle");
   function themeLabel() {
