@@ -25,14 +25,21 @@
       External audio &amp; speech encoders ranked by <strong>mean reciprocal rank</strong>
       (MRR) across the SpeechDx clinical tasks, grouped by a speech-production taxonomy.
       Each cell is a frozen-encoder linear probe: <strong>AUC</strong> for classification
-      (higher&nbsp;=&nbsp;better, 0.5&nbsp;=&nbsp;chance),
-      <strong>MAE&nbsp;↓</strong> for regression (lower&nbsp;=&nbsp;better).
+      (higher&nbsp;=&nbsp;better, 0.5&nbsp;=&nbsp;chance), and either
+      <strong>MAE&nbsp;↓</strong> (lower&nbsp;=&nbsp;better) or <strong>C-index</strong>
+      (higher&nbsp;=&nbsp;better, the ordinal analogue of AUC) for regression — toggle below.
     </p>
     <p class="meta" id="meta"></p>
-    <label class="merge-toggle">
-      <input type="checkbox" id="merge-toggle" />
-      <span>Average similar tasks</span>
-    </label>
+    <div class="toggles" style="display:flex;gap:1.25rem;flex-wrap:wrap;justify-content:center;align-items:center;">
+      <label class="merge-toggle">
+        <input type="checkbox" id="merge-toggle" />
+        <span>Average similar tasks</span>
+      </label>
+      <label class="merge-toggle">
+        <input type="checkbox" id="cindex-toggle" />
+        <span>Score regression by C-index</span>
+      </label>
+    </div>
   </header>
 
   <section class="legend" id="legend" aria-label="Legend"></section>
