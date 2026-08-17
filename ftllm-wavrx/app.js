@@ -18,7 +18,11 @@
 
   // ---- state ----
   let board = "mae", viewKey = "merged", sortKey = "headline", sortDir = -1;
+  const hidden = new Set();                       // model families currently hidden
+  const FAMILIES = DATA.families || [{ code: "llm", label: "LLM" }, { code: "frozen", label: "Frozen Model" }];
   const V = () => DATA.boards[board].views[viewKey];
+  // visible models: a model with no family (e.g. WavRx) is uncategorized and never hidden
+  const visible = () => V().models.filter(m => !m.family || !hidden.has(m.family));
   const hLabel = () => DATA.boards[board].headline_label;
   const strip0 = v => v.toFixed(3).replace(/^0\./, ".").replace(/^-0\./, "-.");
   const fmt = (v, t) => v == null ? "—" : t.dec2 ? v.toFixed(2) : strip0(v);
@@ -69,7 +73,7 @@
 
   function renderMeta() {
     document.getElementById("meta").innerHTML =
-      `${V().models.length} models · ${V().n_tasks} ${viewKey === "category" ? "category columns" : "tasks"} · ` +
+      `${visible().length}${hidden.size ? ` of ${V().models.length}` : ""} models · ${V().n_tasks} ${viewKey === "category" ? "category columns" : "tasks"} · ` +
       `generated ${DATA.generated} · <a href="${DATA.repo_url}" target="_blank" rel="noopener">repo ↗</a> · ` +
       `by <a href="${DATA.author_url}" target="_blank" rel="noopener">${DATA.author}</a>` +
       ` · <span style="color:#e0af68">*</span> respiratory (c9s/coswara) scores leak-contaminated`;
@@ -155,7 +159,7 @@
   function renderBody() {
     if (tbody) tbody.remove();
     tbody = document.createElement("tbody"); table.appendChild(tbody);
-    const all = V().models;
+    const all = visible();
     let pending = [], placed;
     if (sortKey === "headline") {
       pending = all.filter(m => m.pending);
@@ -177,10 +181,10 @@
     curTasks = V().tasks;
     bestByTask = {};
     curTasks.forEach(t => {
-      const vals = V().models.map(m => m.scores[t.id]).filter(v => v != null);
+      const vals = visible().map(m => m.scores[t.id]).filter(v => v != null);
       bestByTask[t.id] = !vals.length ? null : (t.lo ? Math.min.apply(null, vals) : Math.max.apply(null, vals));
     });
-    maxH = Math.max.apply(null, V().models.map(m => m.headline || 0));
+    maxH = Math.max.apply(null, visible().map(m => m.headline || 0));
     renderLegend(); renderMeta();
     table.innerHTML = ""; tbody = null;
     buildHeader(); renderBody(); renderSortIndicators();
@@ -195,6 +199,24 @@
     document.querySelectorAll("#view-switch .seg").forEach(b => b.classList.remove("active"));
     btn.classList.add("active"); viewKey = btn.dataset.view; sortKey = "headline"; sortDir = -1; render();
   }));
+
+  // hide-family toggles (LLM / Frozen Model); WavRx is uncategorized and stays
+  const hideSwitch = document.getElementById("hide-switch");
+  if (hideSwitch) {
+    FAMILIES.forEach(f => {
+      const btn = document.createElement("button");
+      btn.className = "seg"; btn.type = "button"; btn.dataset.family = f.code;
+      btn.setAttribute("aria-pressed", "false"); btn.textContent = f.label;
+      btn.title = `Hide ${f.label} rows (ranks, bars and top-1 marks recompute over what's shown)`;
+      btn.addEventListener("click", () => {
+        if (hidden.has(f.code)) hidden.delete(f.code); else hidden.add(f.code);
+        btn.classList.toggle("active", hidden.has(f.code));
+        btn.setAttribute("aria-pressed", String(hidden.has(f.code)));
+        render();
+      });
+      hideSwitch.appendChild(btn);
+    });
+  }
 
   const themeBtn = document.getElementById("theme-toggle");
   function themeLabel() { if (themeBtn) themeBtn.textContent = document.documentElement.dataset.theme === "dark" ? "☀" : "☾"; }
