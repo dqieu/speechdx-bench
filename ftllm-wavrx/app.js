@@ -72,10 +72,13 @@
   let hrow, tbody;
 
   function renderMeta() {
+    const cindexCoverage = board === "cindex" ?
+      ` · <span style="color:#e0af68">*</span> marked frozen/WavRx rows use available finite regression tasks (skip-na; hover for coverage)` : "";
     document.getElementById("meta").innerHTML =
       `${visible().length}${hidden.size ? ` of ${V().models.length}` : ""} models · ${V().n_tasks} ${viewKey === "category" ? "category columns" : "tasks"} · ` +
       `generated ${DATA.generated} · <a href="${DATA.repo_url}" target="_blank" rel="noopener">repo ↗</a> · ` +
       `by <a href="${DATA.author_url}" target="_blank" rel="noopener">${DATA.author}</a>` +
+      cindexCoverage +
       ` · <span style="color:#e0af68">*</span> respiratory (c9s/coswara) scores leak-contaminated`;
   }
 
@@ -129,6 +132,7 @@
     const mHtml = `<div class="tt-title">${m.display}${m.leak ? ' *' : ''}</div><div class="tt-sub">${m.host}</div>` +
       `<a class="tt-link" href="${m.repo_url}" target="_blank" rel="noopener">${m.repo} ↗</a>` +
       `<div class="tt-rev">${m.revision} · ${m.revision_date}</div>` +
+      (board === "cindex" && m.headline_note ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* ${m.headline_note}</div>` : "") +
       (m.leak ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* c9s/coswara respiratory scores leak-contaminated (cross-task train/test participant overlap, ~25%; see the v3.6 report)</div>` : "");
     tdM.addEventListener("mouseenter", () => showTip(mHtml));
     tdM.addEventListener("click", e => { showTip(mHtml); e.stopPropagation(); });
@@ -140,7 +144,9 @@
       tdH.innerHTML = `<div class="mrr-val pending">pending</div><div class="cov">cls ${m.cls_mean == null ? "—" : strip0(m.cls_mean)}</div>`;
     } else {
       const w = maxH ? Math.round((m.headline / maxH) * 100) : 0;
-      tdH.innerHTML = `<div class="mrr-val">${strip0(m.headline)}</div><div class="mrr-track"><div class="mrr-bar" style="width:${w}%"></div></div>`;
+      const note = board === "cindex" && m.headline_note ?
+        `<sup style="color:#e0af68;cursor:help" title="${m.headline_note}">*</sup>` : "";
+      tdH.innerHTML = `<div class="mrr-val">${strip0(m.headline)}${note}</div><div class="mrr-track"><div class="mrr-bar" style="width:${w}%"></div></div>`;
     }
     tr.appendChild(tdH);
 

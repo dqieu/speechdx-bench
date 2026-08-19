@@ -41,7 +41,8 @@
         <strong>WavRx</strong> against every frozen-encoder probe on the <strong>SpeechDx</strong>
         clinical-speech benchmark, ranked by <strong>mean reciprocal rank</strong> (MRR). Each cell:
         <strong>AUC</strong> for classification (higher = better), <strong>MAE&nbsp;↓</strong> for
-        regression. The single-number <strong>C-index · average</strong> board is pending (Trillium).
+        regression. On the <strong>C-index · average</strong> board, marked frozen/WavRx rows with unavailable T11
+        concordance use the remaining five finite regression tasks (<strong>skip-na</strong>) and carry an asterisk.
       </p>
       <p class="meta" id="meta"></p>
       <div class="controls">
@@ -75,7 +76,7 @@
     <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
   </div>
 
-  <script src="data.js?v=14"></script>
-  <script src="gate.js?v=14"></script>
+  <script src="data.js?v=15"></script>
+  <script src="gate.js?v=15"></script>
 </body>
 </html>
