@@ -15,7 +15,7 @@
       } catch (e) { document.documentElement.dataset.theme = "light"; }
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=14" />
+  <link rel="stylesheet" href="style.css?v=15" />
 </head>
 <body>
   <!-- password gate -->
@@ -41,7 +41,10 @@
         <strong>WavRx</strong> against every frozen-encoder probe on the <strong>SpeechDx</strong>
         clinical-speech benchmark, ranked by <strong>mean reciprocal rank</strong> (MRR). Each cell:
         <strong>AUC</strong> for classification (higher = better), <strong>MAE&nbsp;↓</strong> for
-        regression. On the <strong>C-index · average</strong> board, marked frozen/WavRx rows with unavailable T11
+        regression. Use the <strong>Avg Pool</strong>, <strong>ASP</strong>, <strong>LoRA</strong>, and <strong>LLM</strong>
+        tracks to compare protocols; hover or tap each <strong>i</strong> for methodology. Displayed MRR ranks are
+        recomputed over the enabled tracks. On the <strong>C-index · average</strong>
+        board, marked Avg Pool/WavRx rows with unavailable T11
         concordance use the remaining five finite regression tasks (<strong>skip-na</strong>) and carry an asterisk.
       </p>
       <p class="meta" id="meta"></p>
@@ -55,8 +58,8 @@
           <button class="seg active" type="button" data-view="merged">Merged&nbsp;19</button>
           <button class="seg" type="button" data-view="category">By&nbsp;category</button>
         </div>
-        <div class="seg-group seg-hide" id="hide-switch" role="group" aria-label="Hide model family">
-          <span class="seg-label">Hide</span>
+        <div class="seg-group seg-tracks" id="track-switch" role="group" aria-label="Benchmark tracks">
+          <span class="seg-label">Tracks</span>
         </div>
       </div>
     </header>
@@ -76,7 +79,7 @@
     <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
   </div>
 
-  <script src="data.js?v=15"></script>
-  <script src="gate.js?v=15"></script>
+  <script src="data.js?v=17"></script>
+  <script src="gate.js?v=17"></script>
 </body>
 </html>

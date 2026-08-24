@@ -18,16 +18,41 @@
 
   // ---- state ----
   let board = "mae", viewKey = "merged", sortKey = "headline", sortDir = -1;
-  const hidden = new Set();                       // model families currently hidden
-  const FAMILIES = DATA.families || [{ code: "llm", label: "LLM" }, { code: "frozen", label: "Frozen Model" }];
+  const TRACKS = DATA.tracks || [
+    { code: "avg_pool", label: "Avg Pool" },
+    { code: "asp", label: "ASP" },
+    { code: "lora", label: "LoRA" },
+    { code: "llm", label: "LLM" }
+  ];
+  const trackLabel = Object.fromEntries(TRACKS.map(t => [t.code, t.label]));
+  const activeTracks = new Set(TRACKS.map(t => t.code));
   const V = () => DATA.boards[board].views[viewKey];
-  // visible models: a model with no family (e.g. WavRx) is uncategorized and never hidden
-  const visible = () => V().models.filter(m => !m.family || !hidden.has(m.family));
+  const visible = () => V().models.filter(m => activeTracks.has(m.track));
   const hLabel = () => DATA.boards[board].headline_label;
   const strip0 = v => v.toFixed(3).replace(/^0\./, ".").replace(/^-0\./, "-.");
   const fmt = (v, t) => v == null ? "—" : t.dec2 ? v.toFixed(2) : strip0(v);
 
-  let curTasks = [], bestByTask = {}, maxH = 0;
+  let curTasks = [], bestByTask = {}, visibleMrr = {}, maxH = 0;
+
+  function recomputeVisibleMrr() {
+    visibleMrr = {};
+    if (board !== "mae") return;
+    const sums = {}, counts = {}, models = visible().filter(m => !m.partial);
+    models.forEach(m => { sums[m.id] = 0; counts[m.id] = 0; });
+    curTasks.forEach(t => {
+      const rows = models.filter(m => m.scores[t.id] != null)
+        .sort((a, b) => (a.scores[t.id] - b.scores[t.id]) * (t.lo ? 1 : -1));
+      let rank = 0, previous = null;
+      rows.forEach((m, i) => {
+        const value = m.scores[t.id];
+        if (previous === null || value !== previous) rank = i + 1;
+        sums[m.id] += 1 / rank; counts[m.id] += 1; previous = value;
+      });
+    });
+    models.forEach(m => { visibleMrr[m.id] = counts[m.id] ? sums[m.id] / counts[m.id] : null; });
+  }
+
+  const headlineOf = m => board === "mae" ? visibleMrr[m.id] : m.headline;
 
   // ---- legend ----
   const legend = document.getElementById("legend");
@@ -41,11 +66,27 @@
 
   // ---- tooltip ----
   const tip = document.getElementById("tooltip");
-  function showTip(html) { tip.innerHTML = html + '<button class="tt-close" aria-label="Dismiss">&times;</button>'; tip.hidden = false; }
+  function showTip(html, variant) {
+    tip.className = "tooltip" + (variant ? ` tooltip-${variant}` : "");
+    tip.innerHTML = html + '<button class="tt-close" aria-label="Dismiss">&times;</button>';
+    tip.hidden = false;
+  }
   function hideTip() { tip.hidden = true; }
   tip.addEventListener("click", e => { e.stopPropagation(); if (e.target.closest(".tt-close")) hideTip(); });
   document.addEventListener("click", () => { if (!tip.hidden) hideTip(); });
   document.querySelector(".table-wrap").addEventListener("mouseleave", hideTip);
+
+  function trackMethodHtml(t) {
+    const method = t.methodology || {};
+    const summary = method.summary ? `<div class="tt-method-summary">${method.summary}</div>` : "";
+    const sections = (method.sections || []).map(s =>
+      `<div class="tt-method-section"><div class="tt-method-label">${s.label}</div><div>${s.text}</div></div>`
+    ).join("");
+    const paper = method.paper_url ?
+      `<a class="tt-link tt-paper" href="${method.paper_url}" target="_blank" rel="noopener">${method.paper_label || "Methodology paper"} ↗</a>` : "";
+    return `<div class="tt-title">${t.label} methodology</div>` +
+      summary + paper + sections;
+  }
 
   // ---- sorting ----
   function sortedPlaced(list) {
@@ -53,7 +94,7 @@
     ms.sort((a, b) => {
       if (sortKey === "model") { const x = a.short.toLowerCase(), y = b.short.toLowerCase(); return x < y ? sortDir : x > y ? -sortDir : 0; }
       let av, bv, lo = false;
-      if (sortKey === "headline") { av = a.headline; bv = b.headline; }
+      if (sortKey === "headline") { av = headlineOf(a); bv = headlineOf(b); }
       else { av = a.scores[sortKey]; bv = b.scores[sortKey]; const t = curTasks.find(t => t.id === sortKey); lo = t && t.lo; }
       if (av == null && bv == null) return 0;
       if (av == null) return 1; if (bv == null) return -1;
@@ -73,9 +114,9 @@
 
   function renderMeta() {
     const cindexCoverage = board === "cindex" ?
-      ` · <span style="color:#e0af68">*</span> marked frozen/WavRx rows use available finite regression tasks (skip-na; hover for coverage)` : "";
+      ` · <span style="color:#e0af68">*</span> marked Avg Pool/WavRx rows use available finite regression tasks (skip-na; hover for coverage)` : "";
     document.getElementById("meta").innerHTML =
-      `${visible().length}${hidden.size ? ` of ${V().models.length}` : ""} models · ${V().n_tasks} ${viewKey === "category" ? "category columns" : "tasks"} · ` +
+      `${visible().length}${activeTracks.size < TRACKS.length ? ` of ${V().models.length}` : ""} models · ${V().n_tasks} ${viewKey === "category" ? "category columns" : "tasks"} · ` +
       `generated ${DATA.generated} · <a href="${DATA.repo_url}" target="_blank" rel="noopener">repo ↗</a> · ` +
       `by <a href="${DATA.author_url}" target="_blank" rel="noopener">${DATA.author}</a>` +
       cindexCoverage +
@@ -131,8 +172,9 @@
       `${m.leak ? '<sup style="color:#e0af68;cursor:help" title="respiratory (c9s/coswara) scores leak-contaminated — see report">*</sup>' : ''}</span>`;
     const mHtml = `<div class="tt-title">${m.display}${m.leak ? ' *' : ''}</div><div class="tt-sub">${m.host}</div>` +
       `<a class="tt-link" href="${m.repo_url}" target="_blank" rel="noopener">${m.repo} ↗</a>` +
-      `<div class="tt-rev">${m.revision} · ${m.revision_date}</div>` +
-      (board === "cindex" && m.headline_note ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* ${m.headline_note}</div>` : "") +
+      `<div class="tt-rev">Track: ${trackLabel[m.track] || m.track} · ${m.revision} · ${m.revision_date}</div>` +
+      (m.id === "wavlm_rx" ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* WavRx uses its specialized two-branch head and is grouped in the ASP track.</div>` : "") +
+      (m.headline_note ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* ${m.headline_note}</div>` : "") +
       (m.leak ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* c9s/coswara respiratory scores leak-contaminated (cross-task train/test participant overlap, ~25%; see the v3.6 report)</div>` : "");
     tdM.addEventListener("mouseenter", () => showTip(mHtml));
     tdM.addEventListener("click", e => { showTip(mHtml); e.stopPropagation(); });
@@ -140,13 +182,16 @@
 
     const tdH = document.createElement("td");
     tdH.className = "col-mrr cell-mrr";
-    if (m.headline == null) {
-      tdH.innerHTML = `<div class="mrr-val pending">pending</div><div class="cov">cls ${m.cls_mean == null ? "—" : strip0(m.cls_mean)}</div>`;
+    const headline = headlineOf(m);
+    if (headline == null) {
+      tdH.innerHTML = m.partial ?
+        `<div class="mrr-val pending">provisional</div><div class="cov">${m.coverage}/${curTasks.length} shown</div>` :
+        `<div class="mrr-val pending">pending</div><div class="cov">cls ${m.cls_mean == null ? "—" : strip0(m.cls_mean)}</div>`;
     } else {
-      const w = maxH ? Math.round((m.headline / maxH) * 100) : 0;
+      const w = maxH ? Math.round((headline / maxH) * 100) : 0;
       const note = board === "cindex" && m.headline_note ?
         `<sup style="color:#e0af68;cursor:help" title="${m.headline_note}">*</sup>` : "";
-      tdH.innerHTML = `<div class="mrr-val">${strip0(m.headline)}${note}</div><div class="mrr-track"><div class="mrr-bar" style="width:${w}%"></div></div>`;
+      tdH.innerHTML = `<div class="mrr-val">${strip0(headline)}${note}</div><div class="mrr-track"><div class="mrr-bar" style="width:${w}%"></div></div>`;
     }
     tr.appendChild(tdH);
 
@@ -176,7 +221,8 @@
     if (pending.length) {
       const band = document.createElement("tr"); band.className = "band-row";
       const td = document.createElement("td"); td.colSpan = curTasks.length + 2;
-      td.textContent = "Pending C-index — classification only (Trillium)";
+      td.textContent = pending.some(m => m.partial) ?
+        "Provisional / partial attempts — excluded from headline ranking" : "Pending C-index — classification only";
       band.appendChild(td); tbody.appendChild(band);
       pending.forEach(m => tbody.appendChild(modelRow(m, "—")));
     }
@@ -185,12 +231,13 @@
 
   function render() {
     curTasks = V().tasks;
+    recomputeVisibleMrr();
     bestByTask = {};
     curTasks.forEach(t => {
       const vals = visible().map(m => m.scores[t.id]).filter(v => v != null);
       bestByTask[t.id] = !vals.length ? null : (t.lo ? Math.min.apply(null, vals) : Math.max.apply(null, vals));
     });
-    maxH = Math.max.apply(null, visible().map(m => m.headline || 0));
+    maxH = Math.max.apply(null, visible().map(m => headlineOf(m) || 0));
     renderLegend(); renderMeta();
     table.innerHTML = ""; tbody = null;
     buildHeader(); renderBody(); renderSortIndicators();
@@ -206,21 +253,37 @@
     btn.classList.add("active"); viewKey = btn.dataset.view; sortKey = "headline"; sortDir = -1; render();
   }));
 
-  // hide-family toggles (LLM / Frozen Model); WavRx is uncategorized and stays
-  const hideSwitch = document.getElementById("hide-switch");
-  if (hideSwitch) {
-    FAMILIES.forEach(f => {
+  // Track toggles; ranks, bars, counts and top-1 marks always use the shown tracks.
+  const trackSwitch = document.getElementById("track-switch");
+  if (trackSwitch) {
+    TRACKS.forEach(t => {
+      const control = document.createElement("span");
+      control.className = "track-control active";
       const btn = document.createElement("button");
-      btn.className = "seg"; btn.type = "button"; btn.dataset.family = f.code;
-      btn.setAttribute("aria-pressed", "false"); btn.textContent = f.label;
-      btn.title = `Hide ${f.label} rows (ranks, bars and top-1 marks recompute over what's shown)`;
+      btn.className = "seg track-toggle active"; btn.type = "button"; btn.dataset.track = t.code;
+      btn.setAttribute("aria-pressed", "true"); btn.textContent = t.label;
+      btn.title = `Show or hide the ${t.label} track (ranks, bars and top-1 marks recompute)`;
       btn.addEventListener("click", () => {
-        if (hidden.has(f.code)) hidden.delete(f.code); else hidden.add(f.code);
-        btn.classList.toggle("active", hidden.has(f.code));
-        btn.setAttribute("aria-pressed", String(hidden.has(f.code)));
+        if (activeTracks.has(t.code)) {
+          if (activeTracks.size === 1) return;
+          activeTracks.delete(t.code);
+        } else {
+          activeTracks.add(t.code);
+        }
+        btn.classList.toggle("active", activeTracks.has(t.code));
+        control.classList.toggle("active", activeTracks.has(t.code));
+        btn.setAttribute("aria-pressed", String(activeTracks.has(t.code)));
         render();
       });
-      hideSwitch.appendChild(btn);
+      const info = document.createElement("button");
+      info.className = "track-info"; info.type = "button"; info.textContent = "i";
+      info.setAttribute("aria-label", `${t.label} methodology`);
+      info.title = `${t.label} methodology`;
+      const showMethod = e => { showTip(trackMethodHtml(t), "method"); e.stopPropagation(); };
+      info.addEventListener("mouseenter", showMethod);
+      info.addEventListener("focus", showMethod);
+      info.addEventListener("click", showMethod);
+      control.appendChild(btn); control.appendChild(info); trackSwitch.appendChild(control);
     });
   }
 

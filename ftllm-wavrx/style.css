@@ -163,6 +163,15 @@ tbody td { border-bottom: 1px solid var(--line); }
   cursor: pointer; padding: 0; border-radius: 4px;
 }
 .tooltip .tt-close:hover { color: #fff; background: rgba(255,255,255,0.14); }
+.tooltip-method {
+  width: min(700px, calc(100vw - 24px)); max-width: min(700px, calc(100vw - 24px));
+  max-height: min(72vh, 680px); overflow-y: auto; padding: 15px 36px 15px 17px;
+}
+.tooltip-method .tt-title { font-size: 15px; margin-bottom: 7px; }
+.tooltip-method .tt-method-summary { margin-bottom: 8px; }
+.tooltip-method .tt-paper { margin: 1px 0 8px; word-break: normal; }
+.tooltip-method .tt-method-section { margin-top: 10px; padding-top: 9px; border-top: 1px solid rgba(255,255,255,.12); }
+.tooltip-method .tt-method-label { color: #c8d8f8; font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 3px; }
 
 /* ---- password gate (added; public renderer above is untouched) ---- */
 [hidden] { display: none !important; }
@@ -189,6 +198,17 @@ tbody td { border-bottom: 1px solid var(--line); }
 .seg-label { font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); padding: 7px 10px; align-self: center; opacity: .8; }
 .seg-label + .seg { border-left: 1px solid var(--line); }
 .seg-hide .seg.active { background: var(--ink-soft); color: var(--bg, #fff); text-decoration: line-through; }
+.seg-tracks { overflow: visible; }
+.seg-label + .track-control, .track-control + .track-control { border-left: 1px solid var(--line); }
+.track-control { display: inline-flex; align-items: stretch; }
+.track-control .seg { padding-right: 8px; }
+.track-control .track-info {
+  width: 25px; border: 0; border-left: 1px solid var(--line); background: transparent;
+  color: var(--ink-soft); font: italic 700 11px/1 ui-sans-serif, system-ui, sans-serif; cursor: help;
+}
+.track-control.active .seg, .track-control.active .track-info { background: var(--ink-soft); color: var(--bg, #fff); }
+.track-control.active .track-info { border-left-color: rgba(255,255,255,.25); }
+.track-control .track-info:hover, .track-control .track-info:focus-visible { background: var(--accent); color: #fff; outline: none; }
 
 /* ---- pending band + headline ---- */
 .band-row td { background: rgba(200,120,20,0.12); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); padding: 5px 12px; }
