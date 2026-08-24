@@ -197,16 +197,15 @@ tbody td { border-bottom: 1px solid var(--line); }
 .seg:hover:not(.active) { background: var(--th-hover); }
 .seg-label { font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); padding: 7px 10px; align-self: center; opacity: .8; }
 .seg-label + .seg { border-left: 1px solid var(--line); }
-.seg-hide .seg.active { background: var(--ink-soft); color: var(--bg, #fff); text-decoration: line-through; }
 .seg-tracks { overflow: visible; }
 .seg-label + .track-control, .track-control + .track-control { border-left: 1px solid var(--line); }
 .track-control { display: inline-flex; align-items: stretch; }
 .track-control .seg { padding-right: 8px; }
 .track-control .track-info {
   width: 25px; border: 0; border-left: 1px solid var(--line); background: transparent;
-  color: var(--ink-soft); font: italic 700 11px/1 ui-sans-serif, system-ui, sans-serif; cursor: help;
+  color: var(--ink-soft); font: italic 700 11px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
 }
-.track-control.active .seg, .track-control.active .track-info { background: var(--ink-soft); color: var(--bg, #fff); }
+.track-control.active .seg, .track-control.active .track-info { background: var(--accent); color: #fff; }
 .track-control.active .track-info { border-left-color: rgba(255,255,255,.25); }
 .track-control .track-info:hover, .track-control .track-info:focus-visible { background: var(--accent); color: #fff; outline: none; }
 

@@ -279,10 +279,7 @@
       info.className = "track-info"; info.type = "button"; info.textContent = "i";
       info.setAttribute("aria-label", `${t.label} methodology`);
       info.title = `${t.label} methodology`;
-      const showMethod = e => { showTip(trackMethodHtml(t), "method"); e.stopPropagation(); };
-      info.addEventListener("mouseenter", showMethod);
-      info.addEventListener("focus", showMethod);
-      info.addEventListener("click", showMethod);
+      info.addEventListener("click", e => { showTip(trackMethodHtml(t), "method"); e.stopPropagation(); });
       control.appendChild(btn); control.appendChild(info); trackSwitch.appendChild(control);
     });
   }
