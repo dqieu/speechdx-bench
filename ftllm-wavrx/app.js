@@ -113,13 +113,10 @@
   let hrow, tbody;
 
   function renderMeta() {
-    const cindexCoverage = board === "cindex" ?
-      ` · <span style="color:#e0af68">*</span> marked rows use available finite regression tasks (skip-na; tap the model for coverage)` : "";
     document.getElementById("meta").innerHTML =
       `${visible().length}${activeTracks.size < TRACKS.length ? ` of ${V().models.length}` : ""} models · ${V().n_tasks} ${viewKey === "category" ? "category columns" : "tasks"} · ` +
       `generated ${DATA.generated} · <a href="${DATA.repo_url}" target="_blank" rel="noopener">repo ↗</a> · ` +
       `by <a href="${DATA.author_url}" target="_blank" rel="noopener">${DATA.author}</a>` +
-      cindexCoverage +
       ` · <span style="color:#e0af68">*</span> respiratory (c9s/coswara) scores leak-contaminated`;
   }
 
@@ -174,7 +171,7 @@
     const mHtml = `<div class="tt-title">${m.display}${rowNote ? ' *' : ''}</div><div class="tt-sub">${m.host}</div>` +
       `<a class="tt-link" href="${m.repo_url}" target="_blank" rel="noopener">${m.repo} ↗</a>` +
       `<div class="tt-rev">Track: ${trackLabel[m.track] || m.track} · ${m.revision} · ${m.revision_date}</div>` +
-      (m.id === "wavlm_rx" ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* WavRx uses its specialized two-branch head and is grouped in the ASP track.</div>` : "") +
+      (m.id === "wavlm_rx" ? `<div style="font-size:11px;margin-top:5px">WavRx uses its specialized two-branch head and is grouped in the ASP track.</div>` : "") +
       (m.headline_note ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* ${m.headline_note}</div>` : "") +
       (m.leak ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* c9s/coswara respiratory scores leak-contaminated (cross-task train/test participant overlap, ~25%; see the v3.6 report)</div>` : "");
     tdM.addEventListener("click", e => { showTip(mHtml); e.stopPropagation(); });
