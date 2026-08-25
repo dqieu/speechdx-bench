@@ -135,7 +135,8 @@
       const th = document.createElement("th");
       th.className = "th-task th-sortable"; th.dataset.key = t.id;
       th.style.setProperty("--cat", catColor[t.category]);
-      th.innerHTML = `<div class="th-inner"><span class="task-tnum">${t.tnum}</span>` +
+      const tnum = board === "cindex" && t.id === "torgo_sevR" && t.tnum === "T11" ? "T11*" : t.tnum;
+      th.innerHTML = `<div class="th-inner"><span class="task-tnum">${tnum}</span>` +
         `<span class="task-label">${t.slabel}</span><span class="task-metric">${t.metric}${t.lo ? "&nbsp;↓" : ""}</span></div>`;
       const tipHtml = `<div class="tt-title">${t.tnum} · ${t.label}</div><div>${t.desc}</div>` +
         `<div class="tt-sub">${t.metric}${t.lo ? " ↓" : ""} · ${catLabel[t.category]}</div>`;
