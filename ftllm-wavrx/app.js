@@ -1,5 +1,5 @@
-/* FT-LLM + WavRx leaderboard renderer — an extension of the public SpeechDx
-   docs/app.js (same iOS-safe createElement DOM building). Adds: a board switch
+/* SpeechDx Leaderboard — Extended Tracks renderer — an extension of the public
+   SpeechDx docs/app.js (same iOS-safe createElement DOM building). Adds: a board switch
    (MAE·MRR / C-index·avg), a 3-way view (raw 27 / merged 19 / by-category), a
    pending band for C-index-less rows, and per-task metric direction. Reads
    window.LEADERBOARD_DATA (decrypted by gate.js). */
@@ -114,7 +114,7 @@
 
   function renderMeta() {
     const cindexCoverage = board === "cindex" ?
-      ` · <span style="color:#e0af68">*</span> marked Avg Pool/WavRx rows use available finite regression tasks (skip-na; hover for coverage)` : "";
+      ` · <span style="color:#e0af68">*</span> marked rows use available finite regression tasks (skip-na; tap for coverage)` : "";
     document.getElementById("meta").innerHTML =
       `${visible().length}${activeTracks.size < TRACKS.length ? ` of ${V().models.length}` : ""} models · ${V().n_tasks} ${viewKey === "category" ? "category columns" : "tasks"} · ` +
       `generated ${DATA.generated} · <a href="${DATA.repo_url}" target="_blank" rel="noopener">repo ↗</a> · ` +

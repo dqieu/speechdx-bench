@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FT-LLM + WavRx Leaderboard</title>
-  <meta name="description" content="Fine-tuned audio-LLMs (30B / 7B) + WavRx vs. frozen-encoder probes on the SpeechDx clinical-speech benchmark." />
+  <title>SpeechDx Leaderboard — Extended Tracks</title>
+  <meta name="description" content="Interactive leaderboard for the SpeechDx speech-health benchmark — adapted and fine-tuned models ranked alongside frozen-encoder probes across clinical tasks, by mean reciprocal rank." />
   <script>
     (function () {
       try {
@@ -20,7 +20,7 @@
   <!-- password gate -->
   <div id="gate" class="gate">
     <form id="gate-form" class="gate-card" autocomplete="off">
-      <h1>FT-LLM&nbsp;+&nbsp;WavRx Leaderboard</h1>
+      <h1>SpeechDx&nbsp;Leaderboard — Extended&nbsp;Tracks</h1>
       <p class="gate-sub">Enter the passphrase to view the board.</p>
       <input id="gate-pass" type="password" placeholder="Passphrase" autocomplete="off"
              autocapitalize="off" autocorrect="off" spellcheck="false" />
@@ -34,17 +34,16 @@
   <div id="app" hidden>
     <header class="page-head">
       <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark / light mode" title="Toggle dark / light"></button>
-      <h1>FT-LLM&nbsp;+&nbsp;WavRx Leaderboard</h1>
+      <h1>SpeechDx&nbsp;Leaderboard — Extended&nbsp;Tracks</h1>
       <p class="tagline">
-        Fine-tuned audio-LLMs (<strong>Qwen3-Omni 30B</strong> LoRA-SFT, the <strong>7B</strong> SFT) and
-        <strong>WavRx</strong> against every frozen-encoder probe on the <strong>SpeechDx</strong>
-        clinical-speech benchmark, ranked by <strong>mean reciprocal rank</strong> (MRR). Each cell:
-        <strong>AUC</strong> for classification (higher = better), <strong>MAE&nbsp;↓</strong> for
-        regression. Use the <strong>Avg Pool</strong>, <strong>ASP</strong>, <strong>LoRA</strong>, and <strong>LLM</strong>
-        tracks to compare protocols; click each <strong>i</strong> for methodology. Displayed MRR ranks are
-        recomputed over the enabled tracks. On the <strong>C-index · average</strong>
-        board, marked Avg Pool/WavRx rows with unavailable T11
-        concordance use the remaining five finite regression tasks (<strong>skip-na</strong>) and carry an asterisk.
+        Adapted and fine-tuned audio models ranked alongside every frozen-encoder probe on the
+        <strong>SpeechDx</strong> clinical-speech benchmark, by <strong>mean reciprocal rank</strong> (MRR).
+        Each cell: <strong>AUC</strong> for classification (higher&nbsp;=&nbsp;better, 0.5&nbsp;=&nbsp;chance),
+        <strong>MAE&nbsp;↓</strong> for regression (lower&nbsp;=&nbsp;better). Use the <strong>Avg Pool</strong>,
+        <strong>ASP</strong>, <strong>LoRA</strong>, and <strong>LLM</strong> tracks to compare protocols; click
+        each <strong>i</strong> for methodology. Displayed MRR ranks are recomputed over the enabled tracks. On
+        the <strong>C-index · average</strong> board, rows with unavailable T11 concordance use the remaining
+        five finite regression tasks (<strong>skip-na</strong>) and carry an asterisk.
       </p>
       <p class="meta" id="meta"></p>
       <div class="controls">
@@ -67,7 +66,7 @@
 
     <main>
       <div class="table-wrap">
-        <table id="board" aria-label="FT-LLM + WavRx leaderboard"></table>
+        <table id="board" aria-label="SpeechDx leaderboard — extended tracks"></table>
       </div>
       <p class="hint">
         Tap a <em>task</em> header for its description · a <em>model</em> for what it is ·
@@ -78,7 +77,7 @@
     <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
   </div>
 
-  <script src="data.js?v=18"></script>
+  <script src="data.js?v=19"></script>
   <script src="gate.js?v=18"></script>
 </body>
 </html>
