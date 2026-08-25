@@ -114,7 +114,7 @@
 
   function renderMeta() {
     const cindexCoverage = board === "cindex" ?
-      ` · <span style="color:#e0af68">*</span> marked cells are unavailable; average and rank use the remaining finite regression tasks (skip-na; tap the cell for coverage)` : "";
+      ` · <span style="color:#e0af68">*</span> marked rows use available finite regression tasks (skip-na; tap the model for coverage)` : "";
     document.getElementById("meta").innerHTML =
       `${visible().length}${activeTracks.size < TRACKS.length ? ` of ${V().models.length}` : ""} models · ${V().n_tasks} ${viewKey === "category" ? "category columns" : "tasks"} · ` +
       `generated ${DATA.generated} · <a href="${DATA.repo_url}" target="_blank" rel="noopener">repo ↗</a> · ` +
@@ -165,12 +165,7 @@
     if (m.id === "wavlm_rx") tr.className = "is-star";
     else if (/^OURS_/.test(m.id) || /^(wavlm_|dmel)/.test(m.id)) tr.className = "is-ours";
 
-    // A headline_note is either a row-scoped caveat (LoRA: methodology, applies
-    // to every cell) or a cell-scoped one (avg_pool/asp: unavailable T11
-    // concordance) — the latter is marked on the specific missing cell instead.
-    const cellScopedNote = m.headline_note && m.track !== "lora";
-    const rowNote = m.leak ? "respiratory (c9s/coswara) scores leak-contaminated — see report"
-      : (m.track === "lora" ? m.headline_note : null);
+    const rowNote = m.leak ? "respiratory (c9s/coswara) scores leak-contaminated — see report" : m.headline_note;
 
     const tdM = document.createElement("td");
     tdM.className = "col-model cell-model";
@@ -180,7 +175,7 @@
       `<a class="tt-link" href="${m.repo_url}" target="_blank" rel="noopener">${m.repo} ↗</a>` +
       `<div class="tt-rev">Track: ${trackLabel[m.track] || m.track} · ${m.revision} · ${m.revision_date}</div>` +
       (m.id === "wavlm_rx" ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* WavRx uses its specialized two-branch head and is grouped in the ASP track.</div>` : "") +
-      (m.track === "lora" && m.headline_note ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* ${m.headline_note}</div>` : "") +
+      (m.headline_note ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* ${m.headline_note}</div>` : "") +
       (m.leak ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* c9s/coswara respiratory scores leak-contaminated (cross-task train/test participant overlap, ~25%; see the v3.6 report)</div>` : "");
     tdM.addEventListener("click", e => { showTip(mHtml); e.stopPropagation(); });
     tr.appendChild(tdM);
@@ -206,14 +201,7 @@
       td.className = "cell-score" + (v == null ? " na" : "");
       td.style.setProperty("--cat-rgb", catRgb[t.category]);
       if (v != null && bestByTask[t.id] != null && v === bestByTask[t.id]) td.classList.add("top1");
-      const missingNote = board === "cindex" && v == null && t.type === "regression" && cellScopedNote;
-      td.innerHTML = fmt(v, t) +
-        (missingNote ? `<sup style="color:#e0af68;cursor:help" title="${m.headline_note.replace(/"/g, "&quot;")}">*</sup>` : "");
-      if (missingNote) {
-        td.style.cursor = "help";
-        const cellHtml = `<div class="tt-title">${t.tnum} · ${t.label}</div><div>${m.headline_note}</div>`;
-        td.addEventListener("click", e => { showTip(cellHtml); e.stopPropagation(); });
-      }
+      td.textContent = fmt(v, t);
       tr.appendChild(td);
     });
     return tr;
