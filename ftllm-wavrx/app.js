@@ -113,9 +113,11 @@
   let hrow, tbody;
 
   function renderMeta() {
+    const paperLink = DATA.paper_url ?
+      ` · <a href="${DATA.paper_url}" target="_blank" rel="noopener">paper ↗</a>` : "";
     document.getElementById("meta").innerHTML =
       `${visible().length}${activeTracks.size < TRACKS.length ? ` of ${V().models.length}` : ""} models · ${V().n_tasks} ${viewKey === "category" ? "category columns" : "tasks"} · ` +
-      `generated ${DATA.generated} · <a href="${DATA.repo_url}" target="_blank" rel="noopener">repo ↗</a> · ` +
+      `generated ${DATA.generated} · <a href="${DATA.repo_url}" target="_blank" rel="noopener">repo ↗</a>${paperLink} · ` +
       `by <a href="${DATA.author_url}" target="_blank" rel="noopener">${DATA.author}</a>` +
       ` · <span style="color:#e0af68">*</span> respiratory (c9s/coswara) scores leak-contaminated`;
   }
