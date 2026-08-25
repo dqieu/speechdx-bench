@@ -40,7 +40,7 @@
       `<span class="legend-item">MAE ↓ — lower better</span>` +
     `</div>`;
 
-  // ---- info box (locked bottom-centre; tap/hover to show, × or tap-away to dismiss) ----
+  // ---- info box (locked bottom-centre; tap to show, × or tap-away to dismiss) ----
   const tip = document.getElementById("tooltip");
   function showTip(html) {
     tip.innerHTML = html + '<button class="tt-close" aria-label="Dismiss">&times;</button>';
@@ -49,7 +49,6 @@
   function hideTip() { tip.hidden = true; }
   tip.addEventListener("click", e => { e.stopPropagation(); if (e.target.closest(".tt-close")) hideTip(); });
   document.addEventListener("click", () => { if (!tip.hidden) hideTip(); });
-  document.querySelector(".table-wrap").addEventListener("mouseleave", hideTip);
 
   // ---- sorting ----
   function sortedModels() {
@@ -114,7 +113,6 @@
       const tipHtml =
         `<div class="tt-title">${t.tnum} · ${t.label}</div><div>${t.desc}</div>` +
         `<div class="tt-sub">${t.metric} · ${catLabel[t.category]}</div>`;
-      th.addEventListener("mouseenter", () => showTip(tipHtml));
       th.addEventListener("click", e => { showTip(tipHtml); e.stopPropagation(); });
       hrow.appendChild(th);
     });
@@ -151,7 +149,6 @@
         `<div class="tt-sub">checkpoint · ${m.host}</div>` +
         `<a class="tt-link" href="${m.repo_url}" target="_blank" rel="noopener">${m.repo} ↗</a>` +
         `<div class="tt-rev">revision <code>${m.revision}</code> · ${m.revision_date}</div>`;
-      tdM.addEventListener("mouseenter", () => showTip(mHtml));
       tdM.addEventListener("click", e => { showTip(mHtml); e.stopPropagation(); });
       tr.appendChild(tdM);
 

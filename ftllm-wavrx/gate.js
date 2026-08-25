@@ -47,7 +47,7 @@
     gate.hidden = true; app.hidden = false;
     // load the public renderer now that the data + DOM are ready
     var s = document.createElement("script");
-    s.src = "app.js?v=18";
+    s.src = "app.js?v=19";
     s.onerror = function () { gate.hidden = false; app.hidden = true; go.disabled = false; show("Failed to load the renderer.", "err"); };
     document.body.appendChild(s);
   });

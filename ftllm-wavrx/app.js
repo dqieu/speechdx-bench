@@ -25,7 +25,8 @@
     { code: "llm", label: "LLM" }
   ];
   const trackLabel = Object.fromEntries(TRACKS.map(t => [t.code, t.label]));
-  const activeTracks = new Set(TRACKS.map(t => t.code));
+  const DEFAULT_TRACK = TRACKS.some(t => t.code === "avg_pool") ? "avg_pool" : TRACKS[0].code;
+  const activeTracks = new Set([DEFAULT_TRACK]);
   const V = () => DATA.boards[board].views[viewKey];
   const visible = () => V().models.filter(m => activeTracks.has(m.track));
   const hLabel = () => DATA.boards[board].headline_label;
@@ -74,7 +75,6 @@
   function hideTip() { tip.hidden = true; }
   tip.addEventListener("click", e => { e.stopPropagation(); if (e.target.closest(".tt-close")) hideTip(); });
   document.addEventListener("click", () => { if (!tip.hidden) hideTip(); });
-  document.querySelector(".table-wrap").addEventListener("mouseleave", hideTip);
 
   function trackMethodHtml(t) {
     const method = t.methodology || {};
@@ -142,7 +142,6 @@
         `<span class="task-label">${t.slabel}</span><span class="task-metric">${t.metric}${t.lo ? "&nbsp;↓" : ""}</span></div>`;
       const tipHtml = `<div class="tt-title">${t.tnum} · ${t.label}</div><div>${t.desc}</div>` +
         `<div class="tt-sub">${t.metric}${t.lo ? " ↓" : ""} · ${catLabel[t.category]}</div>`;
-      th.addEventListener("mouseenter", () => showTip(tipHtml));
       th.addEventListener("click", e => { showTip(tipHtml); e.stopPropagation(); });
       hrow.appendChild(th);
     });
@@ -168,15 +167,15 @@
 
     const tdM = document.createElement("td");
     tdM.className = "col-model cell-model";
+    const nameNote = m.leak ? "respiratory (c9s/coswara) scores leak-contaminated — see report" : m.headline_note;
     tdM.innerHTML = `<span class="rank">${rank}</span><span class="name">${m.short}` +
-      `${m.leak ? '<sup style="color:#e0af68;cursor:help" title="respiratory (c9s/coswara) scores leak-contaminated — see report">*</sup>' : ''}</span>`;
-    const mHtml = `<div class="tt-title">${m.display}${m.leak ? ' *' : ''}</div><div class="tt-sub">${m.host}</div>` +
+      `${nameNote ? `<sup style="color:#e0af68;cursor:help" title="${nameNote.replace(/"/g, "&quot;")}">*</sup>` : ''}</span>`;
+    const mHtml = `<div class="tt-title">${m.display}${nameNote ? ' *' : ''}</div><div class="tt-sub">${m.host}</div>` +
       `<a class="tt-link" href="${m.repo_url}" target="_blank" rel="noopener">${m.repo} ↗</a>` +
       `<div class="tt-rev">Track: ${trackLabel[m.track] || m.track} · ${m.revision} · ${m.revision_date}</div>` +
       (m.id === "wavlm_rx" ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* WavRx uses its specialized two-branch head and is grouped in the ASP track.</div>` : "") +
       (m.headline_note ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* ${m.headline_note}</div>` : "") +
       (m.leak ? `<div style="color:#e0af68;font-size:11px;margin-top:5px">* c9s/coswara respiratory scores leak-contaminated (cross-task train/test participant overlap, ~25%; see the v3.6 report)</div>` : "");
-    tdM.addEventListener("mouseenter", () => showTip(mHtml));
     tdM.addEventListener("click", e => { showTip(mHtml); e.stopPropagation(); });
     tr.appendChild(tdM);
 
@@ -218,6 +217,7 @@
     } else {
       placed = sortedPlaced(all); pending = [];
     }
+    placed.forEach((m, i) => tbody.appendChild(modelRow(m, sortKey === "headline" || sortKey === "model" ? i + 1 : "·")));
     if (pending.length) {
       const band = document.createElement("tr"); band.className = "band-row";
       const td = document.createElement("td"); td.colSpan = curTasks.length + 2;
@@ -226,7 +226,6 @@
       band.appendChild(td); tbody.appendChild(band);
       pending.forEach(m => tbody.appendChild(modelRow(m, "—")));
     }
-    placed.forEach((m, i) => tbody.appendChild(modelRow(m, sortKey === "headline" || sortKey === "model" ? i + 1 : "·")));
   }
 
   function render() {
@@ -257,11 +256,12 @@
   const trackSwitch = document.getElementById("track-switch");
   if (trackSwitch) {
     TRACKS.forEach(t => {
+      const isActive = activeTracks.has(t.code);
       const control = document.createElement("span");
-      control.className = "track-control active";
+      control.className = "track-control" + (isActive ? " active" : "");
       const btn = document.createElement("button");
-      btn.className = "seg track-toggle active"; btn.type = "button"; btn.dataset.track = t.code;
-      btn.setAttribute("aria-pressed", "true"); btn.textContent = t.label;
+      btn.className = "seg track-toggle" + (isActive ? " active" : ""); btn.type = "button"; btn.dataset.track = t.code;
+      btn.setAttribute("aria-pressed", String(isActive)); btn.textContent = t.label;
       btn.title = `Show or hide the ${t.label} track (ranks, bars and top-1 marks recompute)`;
       btn.addEventListener("click", () => {
         if (activeTracks.has(t.code)) {
