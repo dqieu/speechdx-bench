@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SpeechDx Leaderboard — Extended Tracks</title>
-  <meta name="description" content="Interactive leaderboard for the SpeechDx speech-health benchmark — adapted and fine-tuned models ranked alongside frozen-encoder probes across clinical tasks, by mean reciprocal rank." />
+  <meta name="description" content="Interactive private SpeechDx leaderboard across Avg Pool, ASP, LoRA, and LLM evaluation tracks." />
   <script>
     (function () {
       try {
@@ -14,10 +14,9 @@
       } catch (e) { document.documentElement.dataset.theme = "light"; }
     })();
   </script>
-  <link rel="stylesheet" href="style.css?v=17" />
+  <link rel="stylesheet" href="style.css?v=24" />
 </head>
 <body>
-  <!-- password gate -->
   <div id="gate" class="gate">
     <form id="gate-form" class="gate-card" autocomplete="off">
       <h1>SpeechDx&nbsp;Leaderboard — Extended&nbsp;Tracks</h1>
@@ -30,31 +29,47 @@
     </form>
   </div>
 
-  <!-- public-backend leaderboard (revealed after unlock) -->
   <div id="app" hidden>
     <header class="page-head">
-      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark / light mode" title="Toggle dark / light"></button>
+      <div class="header-icons">
+        <button id="view-settings-toggle" class="theme-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="view-settings-panel" aria-label="View settings: metric, task view, export" title="View settings (metric, task view, export)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark / light mode" title="Toggle dark / light"></button>
+      </div>
       <h1>SpeechDx&nbsp;Leaderboard — Extended&nbsp;Tracks</h1>
       <p class="tagline">
-        Adapted and fine-tuned audio models ranked alongside every frozen-encoder probe on the
-        <strong>SpeechDx</strong> clinical-speech benchmark, by <strong>mean reciprocal rank</strong> (MRR).
-        Each cell: <strong>AUC</strong> for classification (higher&nbsp;=&nbsp;better, 0.5&nbsp;=&nbsp;chance),
-        <strong>MAE&nbsp;↓</strong> for regression (lower&nbsp;=&nbsp;better).
+        Frozen representations, attentive pooling, compact encoder adaptation, and audio-language
+        models evaluated on the <strong>SpeechDx</strong> clinical-speech benchmark.
+        Each cell reports <strong>AUC</strong> for classification and either <strong>MAE&nbsp;↓</strong>
+        or <strong>C-index</strong> for regression.
       </p>
       <p class="meta" id="meta"></p>
       <div class="controls">
-        <div class="seg-group" id="board-switch" role="tablist" aria-label="Board">
-          <button class="seg active" type="button" data-board="mae">MAE&nbsp;·&nbsp;MRR</button>
-          <button class="seg" type="button" data-board="cindex">C-index&nbsp;·&nbsp;avg</button>
-        </div>
-        <div class="seg-group" id="view-switch" role="tablist" aria-label="View">
-          <button class="seg" type="button" data-view="raw">Raw&nbsp;27</button>
-          <button class="seg active" type="button" data-view="merged">Merged&nbsp;19</button>
-          <button class="seg" type="button" data-view="category">By&nbsp;category</button>
-        </div>
         <div class="seg-group seg-tracks" id="track-switch" role="group" aria-label="Benchmark tracks">
           <span class="seg-label">Tracks</span>
         </div>
+        <div id="view-settings-panel" class="view-settings-panel">
+          <div class="vsp-section">
+            <span class="vsp-label">Metric</span>
+            <div class="seg-group" id="board-switch" role="tablist" aria-label="Board">
+              <button class="seg active" type="button" data-board="mae">MAE&nbsp;·&nbsp;MRR</button>
+              <button class="seg" type="button" data-board="cindex">C-index&nbsp;·&nbsp;avg</button>
+            </div>
+          </div>
+          <div class="vsp-section">
+            <span class="vsp-label">View</span>
+            <div class="seg-group" id="view-switch" role="tablist" aria-label="View">
+              <button class="seg" type="button" data-view="raw">Raw&nbsp;27</button>
+              <button class="seg active" type="button" data-view="merged">Merged&nbsp;19</button>
+              <button class="seg" type="button" data-view="category">By&nbsp;category</button>
+            </div>
+          </div>
+          <div class="vsp-section">
+            <button id="export-csv" class="export-btn" type="button" title="Download every board × view combination as CSV, zipped, with all tracks combined per sheet">Export&nbsp;CSV</button>
+          </div>
+        </div>
+        <button id="reset-order" class="export-btn" type="button" title="Return to the default ranking" hidden>Reset&nbsp;order</button>
       </div>
     </header>
 
@@ -65,15 +80,18 @@
         <table id="board" aria-label="SpeechDx leaderboard — extended tracks"></table>
       </div>
       <p class="hint">
-        Tap a <em>task</em> header for its description · a <em>model</em> for what it is ·
-        click a column header to sort.
+        Tap a <em>task</em> header for its description · a <em>model</em> for model and protocol details ·
+        click a column header to sort · drag a row by its <strong>⠿</strong> handle to line it up next to
+        another model for comparison — every other row stays put. Ranks and top-1 marks recompute for the
+        visible tracks. On narrow screens, the <strong>👁︎</strong> icon holds the metric, task view, and
+        CSV export.
       </p>
     </main>
 
     <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
   </div>
 
-  <script src="data.js?v=20"></script>
-  <script src="gate.js?v=21"></script>
+  <script src="data.js?v=24"></script>
+  <script src="gate.js?v=24"></script>
 </body>
 </html>

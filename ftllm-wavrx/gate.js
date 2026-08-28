@@ -1,6 +1,5 @@
 /* Password gate. Decrypts window.LB_ENC (AES-GCM / PBKDF2) into
-   window.LEADERBOARD_DATA, then loads the public SpeechDx renderer (app.js)
-   verbatim so it renders exactly like the public site. */
+   window.LEADERBOARD_DATA, then loads the shared SpeechDx renderer (app.js). */
 (function () {
   "use strict";
   var b64 = function (s) { return Uint8Array.from(atob(s), function (c) { return c.charCodeAt(0); }); };
@@ -25,7 +24,7 @@
   // build stamp — proves which gate.js + data.js loaded and that WebCrypto exists
   try {
     var bs = document.getElementById("gate-build");
-    if (bs) bs.textContent = "public-backend r20 · " +
+    if (bs) bs.textContent = "public-parity r24 · " +
       (window.LB_ENC ? ("data " + window.LB_ENC.iter + " iters") : "data missing") +
       (window.crypto && crypto.subtle ? " · webcrypto ✓" : " · webcrypto ✗");
   } catch (e) {}
@@ -45,9 +44,9 @@
     }
     window.LEADERBOARD_DATA = data;
     gate.hidden = true; app.hidden = false;
-    // load the public renderer now that the data + DOM are ready
+    // load the shared renderer now that the data + DOM are ready
     var s = document.createElement("script");
-    s.src = "app.js?v=23";
+    s.src = "app.js?v=24";
     s.onerror = function () { gate.hidden = false; app.hidden = true; go.disabled = false; show("Failed to load the renderer.", "err"); };
     document.body.appendChild(s);
   });

@@ -43,14 +43,24 @@ body {
 .page-head, main, .legend { max-width: 1280px; margin-inline: auto; padding-inline: 24px; }
 .page-head { padding-top: 32px; position: relative; }
 
-/* theme toggle (top-right) + average-similar-tasks checkbox */
+/* header icons (top-right): view-settings (mobile only, see media query) + theme toggle */
+.header-icons { position: absolute; top: 26px; right: 24px; z-index: 6; display: flex; gap: 8px; }
 .theme-toggle {
-  position: absolute; top: 26px; right: 24px;
   width: 38px; height: 38px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
   border: 1px solid var(--line); background: var(--ctrl-bg); color: var(--ink);
   font-size: 17px; line-height: 1; cursor: pointer;
 }
 .theme-toggle:hover { border-color: var(--accent); }
+.theme-toggle[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
+#view-settings-toggle { display: none; }   /* shown only below the mobile breakpoint */
+
+/* view-settings: metric / view / export. On desktop these sit inline in the
+   controls row same as always; the mobile media query turns this same markup
+   into a popover behind the eye icon instead. */
+.view-settings-panel { display: flex; align-items: center; gap: 14px; }
+.vsp-section { display: flex; align-items: center; gap: 8px; }
+.vsp-label { display: none; }
 .merge-toggle {
   display: inline-flex; align-items: center; gap: 7px; margin: 12px 0 0;
   font-size: 13px; color: var(--ink); cursor: pointer; user-select: none;
@@ -172,9 +182,18 @@ tbody td { border-bottom: 1px solid var(--line); }
 .tooltip-method .tt-paper { margin: 1px 0 8px; word-break: normal; }
 .tooltip-method .tt-method-section { margin-top: 10px; padding-top: 9px; border-top: 1px solid rgba(255,255,255,.12); }
 .tooltip-method .tt-method-label { color: #c8d8f8; font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 3px; }
+.tooltip-method .tt-method-list {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 22px;
+  margin: 8px 0 0; padding-left: 18px; color: #d9e0ec;
+}
+.tooltip-method .tt-method-list-single { grid-template-columns: 1fr; gap: 5px; }
+@media (max-width: 540px) {
+  .tooltip-method .tt-method-list { grid-template-columns: 1fr; }
+}
 
-/* ---- password gate (added; public renderer above is untouched) ---- */
 [hidden] { display: none !important; }
+
+/* ---- private password gate ---- */
 .gate { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--bg); }
 .gate-card { width: min(380px, 100%); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 28px 26px; box-shadow: 0 10px 40px rgba(10,18,35,.12); text-align: center; }
 .gate-card h1 { font-size: 20px; margin: 0 0 8px; letter-spacing: -0.01em; }
@@ -190,6 +209,7 @@ tbody td { border-bottom: 1px solid var(--line); }
 
 /* ---- board + view segmented controls ---- */
 .controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 12px 0 0; }
+.controls > .seg-group, .controls > .export-btn, .controls > .view-settings-panel { flex-shrink: 0; }
 .seg-group { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; background: var(--ctrl-bg); }
 .seg { border: 0; background: transparent; color: var(--ink-soft); font: inherit; font-size: 12.5px; font-weight: 600; padding: 7px 13px; cursor: pointer; white-space: nowrap; }
 .seg + .seg { border-left: 1px solid var(--line); }
@@ -197,30 +217,90 @@ tbody td { border-bottom: 1px solid var(--line); }
 .seg:hover:not(.active) { background: var(--th-hover); }
 .seg-label { font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); padding: 7px 10px; align-self: center; opacity: .8; }
 .seg-label + .seg { border-left: 1px solid var(--line); }
+.export-btn {
+  border: 1px solid var(--line); border-radius: 9px; background: var(--ctrl-bg); color: var(--ink-soft);
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 7px 13px; cursor: pointer; white-space: nowrap;
+}
+.export-btn:hover { border-color: var(--accent); color: var(--ink); }
 .seg-label + .track-control, .track-control + .track-control { border-left: 1px solid var(--line); }
-.track-control { display: inline-flex; align-items: center; gap: 6px; padding-right: 8px; }
+.track-control {
+  --track-ui: var(--track-color);
+  display: inline-flex; align-items: center; gap: 6px; padding-right: 8px;
+  box-shadow: inset 0 3px 0 var(--track-ui);
+}
+[data-theme="dark"] .track-control { --track-ui: var(--track-color-dark); }
 .track-control:hover:not(.active) { background: var(--th-hover); }
-.track-control .seg { padding-right: 4px; background: transparent; }
+.track-control .seg { padding-right: 4px; background: transparent; color: var(--track-ui); }
 .track-control .seg:hover { background: transparent; }
 .track-control .track-info {
   width: 15px; height: 15px; flex: 0 0 auto; border: 0; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
-  background: var(--th-hover); color: var(--ink-soft);
+  background: var(--th-hover); color: var(--track-ui);
   font: italic 700 10px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer;
 }
-.track-control.active { background: var(--accent); }
+.track-control.active { background: var(--track-color); box-shadow: none; }
 .track-control.active .seg, .track-control.active .track-info { color: #fff; }
 .track-control.active .track-info { background: rgba(255,255,255,.3); }
-.track-control .track-info:hover, .track-control .track-info:focus-visible { background: var(--accent); color: #fff; outline: none; }
-.track-control.active .track-info:hover, .track-control.active .track-info:focus-visible { background: #fff; color: var(--accent); }
+.track-control .track-info:hover, .track-control .track-info:focus-visible { background: var(--track-ui); color: #fff; outline: none; }
+.track-control.active .track-info:hover, .track-control.active .track-info:focus-visible { background: #fff; color: var(--track-color); }
 
 /* ---- pending band + headline ---- */
 .band-row td { background: rgba(200,120,20,0.12); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); padding: 5px 12px; }
 .cell-mrr .mrr-val.pending { font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-soft); }
 .cell-mrr .cov { font-size: 10px; color: var(--ink-soft); }
 
-/* ---- "ours" + WavRx row accents ---- */
-tr.is-ours .col-model { box-shadow: inset 3px 0 0 var(--accent); }
-tr.is-star .col-model { box-shadow: inset 3px 0 0 #c87814; }
-tr.is-star .name { color: #c87814; }
-[data-theme="dark"] tr.is-star .name { color: #e0af68; }
+/* ---- protocol-track row accent ---- */
+tr.track-row .col-model { box-shadow: inset 4px 0 0 var(--track-color); }
+[data-theme="dark"] tr.track-row .col-model { box-shadow: inset 4px 0 0 var(--track-color-dark); }
+
+/* ---- drag-to-compare reordering ---- */
+.drag-handle {
+  display: inline-block; width: 1.1em; margin-right: 0.35em; text-align: center;
+  color: var(--ink-soft); cursor: grab; opacity: .55;
+}
+.drag-handle:hover { opacity: 1; }
+tr.track-row.dragging { opacity: .35; }
+tr.track-row.dragging td { background-image: none; }
+tr.track-row.drag-over-top td { box-shadow: inset 0 2px 0 0 var(--accent); }
+tr.track-row.drag-over-bottom td { box-shadow: inset 0 -2px 0 0 var(--accent); }
+tr.track-row.drag-over-top .col-model { box-shadow: inset 4px 0 0 var(--track-color), inset 0 2px 0 0 var(--accent); }
+tr.track-row.drag-over-bottom .col-model { box-shadow: inset 4px 0 0 var(--track-color), inset 0 -2px 0 0 var(--accent); }
+[data-theme="dark"] tr.track-row.drag-over-top .col-model { box-shadow: inset 4px 0 0 var(--track-color-dark), inset 0 2px 0 0 var(--accent); }
+[data-theme="dark"] tr.track-row.drag-over-bottom .col-model { box-shadow: inset 4px 0 0 var(--track-color-dark), inset 0 -2px 0 0 var(--accent); }
+
+/* ---- mobile: reclaim horizontal space ---- */
+@media (max-width: 640px) {
+  .page-head, main, .legend { padding-inline: 14px; }
+  .header-icons { right: 14px; }
+  .page-head h1 { max-width: calc(100% - 90px); }
+  #view-settings-toggle { display: block; }
+  /* metric/view/export move behind the eye icon as a popover — the tracks bar
+     gets the whole row to itself; drop its "Tracks" caption and tighten each
+     pill so all four fit without scrolling */
+  .controls { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; margin-right: -14px; }
+  #track-switch .seg-label { display: none; }
+  .track-control { padding-right: 5px; }
+  .track-control .seg { padding: 6px 7px 6px 9px; font-size: 11px; }
+  .track-control .track-info { width: 13px; height: 13px; font-size: 9px; }
+  .view-settings-panel {
+    display: none; flex-direction: column; align-items: stretch; gap: 14px;
+    position: absolute; top: 70px; right: 14px; z-index: 10;
+    width: min(300px, calc(100vw - 28px));
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px; box-shadow: 0 10px 30px rgba(10, 18, 35, .18);
+  }
+  .view-settings-panel.open { display: flex; }
+  .vsp-section { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .vsp-label { display: block; }
+  .view-settings-panel .export-btn { width: 100%; }
+  .legend { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; margin-right: -14px; }
+  .legend-group { flex-wrap: nowrap; flex-shrink: 0; }
+  .legend-item { white-space: nowrap; }
+  /* drop the numeric rank; the drag handle alone is the left margin */
+  .cell-model .rank { display: none; }
+  .drag-handle { margin-right: 0.3em; }
+  .col-model { min-width: 128px; }
+  .cell-model { padding: 8px 6px; }
+  .col-mrr { min-width: 62px; }
+  .cell-mrr { padding: 6px 4px; }
+}
